@@ -10,10 +10,13 @@ function do()
     %endt = 8;
     %[train,trainy,test,testy]=ReadDataSet(startt,endt);
     %[train,test] = loadFeature(startt,endt,trainy,testy);
+    load('trainfeatures.mat');
+    load('trainy.mat');
     load('testfeatures.mat');
     load('testy.mat');
-    data = testfeatures;
-    label= testy;
+    train = trainfeatures;
+    test = testfeatures;
+    [data,label] = mergeData(train,trainy,test,testy);
     [train,trainy,test,testy] = DivideData(data,label,0.2);
     
     fprintf('data loaded!\n');
@@ -26,6 +29,27 @@ function [train_cale,test_scale] = scale(train,test)
     ranges = max(train, [], 1) - minimums;
     train_cale = (train - repmat(minimums, size(train, 1), 1)) ./ repmat(ranges, size(train, 1), 1);
     test_scale = (test - repmat(minimums, size(test, 1), 1)) ./ repmat(ranges, size(test, 1), 1);
+end
+
+function [data,label] = mergeData(train,trainy,test,testy)
+    if size(train,2) ~= size(test,2)
+        return;
+    end
+    dim = size(train,2);
+    
+    labels = union(trainy,testy);
+    data  = zeros(size(train,1) + size(test,1), dim);
+    label = zeros(size(train,1) + size(test,1), 1);
+    idx = 0;
+    for i = 1 : length(labels)
+        type = labels(i);
+        traI = find(trainy == type);
+        tesI = find(testy == type);
+        num = length(traI) + length(tesI);
+        data(idx + 1 : idx + num,:) = [train(traI,:);test(tesI,:)];
+        label(idx + 1 : idx + num, :) = [trainy(traI,:);testy(tesI,:)];
+        idx = idx + num;
+    end
 end
 function [train,test] = loadFeature(startt,endt,trainy,testy)
     load('trainfeatures.mat');

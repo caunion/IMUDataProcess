@@ -17,16 +17,22 @@ function do()
     train = trainfeatures;
     test = testfeatures;
     [data,label] = mergeData(train,trainy,test,testy);
+    [mdata] = LDAFeatureComp(data,label);
+    data = mdata;
     [train,trainy,test,testy] = DivideData(data,label,0.2);
     
     fprintf('data loaded!\n');
     [train_scale,test_scale] = scale(train,test);
+    train = train_scale;
+    test = test_scale;
+    save('lda1t20.mat','train','trainy','test','testy');
+    
     LinearKernelSVM(train_scale,trainy,test_scale,testy);
     GaussianKernelSVM(train_scale,trainy,test_scale,testy);
 end
 function [train_cale,test_scale] = scale(train,test)
-    minimums = min(train, [], 1);
-    ranges = max(train, [], 1) - minimums;
+    minimums = min([train;test], [], 1);
+    ranges = max([train;test], [], 1) - minimums;
     train_cale = (train - repmat(minimums, size(train, 1), 1)) ./ repmat(ranges, size(train, 1), 1);
     test_scale = (test - repmat(minimums, size(test, 1), 1)) ./ repmat(ranges, size(test, 1), 1);
 end

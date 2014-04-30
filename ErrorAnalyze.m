@@ -1,28 +1,35 @@
-
-function do()
-%     if ~exist('testy.mat')
-%         [train,trainy,test,testy] = ReadDataSet(1,20);
-%         save('testy.mat','testy');
-%     else
-%         load('testy.mat');
-%     end
-    load('ndataset.mat');
-    load('predicted_label_G.mat');
-    clear train triany test;
-    
-    errtypes = analyze(ntesty,predicted_label_G);
+%%
+%
+%
+function ErrorAnalyze(realy,predy)
+    errtypes = analyze(realy,predy);
+    accurate = accurancy(errtypes,realy);
+    fprintf('total accurancy: %d',accurate);
     ploterr(errtypes);
+    
     
 end
 
 function [errtypes] = analyze(realy,predicty)
-    errtypes = cell(max(predicty) - min(predicty) + 1,1);
+    if size(predicty,2) ~= 1 || size(realy,2) ~= 1 || size(realy,1) ~= size(predicty,1)
+        return;
+    end
+    types  = union(realy,realy);
+    errtypes = cell( size(types,1),1);
     for i=1:length(predicty)
         if predicty(i) ~= realy(i)
             errtypes{realy(i)}(end+1,:) = predicty(i); 
         end
     end
-    save('errtypes.mat','errtypes');
+end
+
+function [accurancies] = accurancy(errtypes,realy)
+    totalerr = 0;
+    for i =1:length(errtypes)
+        totalerr = totalerr + length(errtypes{i});
+    end
+    accurancies = 1- totalerr / length(realy) ;
+    
 end
 
 function ploterr(errtypes)

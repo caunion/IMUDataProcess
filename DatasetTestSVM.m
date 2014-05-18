@@ -12,20 +12,20 @@ function do()
     %[train,test] = loadFeature(startt,endt,trainy,testy);
     load('trainfeatures.mat');
     load('trainy.mat');
-    load('testfeatures.mat');
-    load('testy.mat');
     train = trainfeatures;
-    test = testfeatures;
-    [data,label] = mergeData(train,trainy,test,testy);
-    [mdata] = LDAFeatureComp(data,label);
-    data = mdata;
+    [data,label] = sample(train,trainy,2000);
+
+%     test = testfeatures;
+%     [data,label] = mergeData(train,trainy,test,testy);
+%     [mdata] = LDAFeatureComp(data,label);
+%     data = mdata;
     [train,trainy,test,testy] = DivideData(data,label,0.2);
     
     fprintf('data loaded!\n');
     [train_scale,test_scale] = scale(train,test);
     train = train_scale;
     test = test_scale;
-    save('lda1t20.mat','train','trainy','test','testy');
+    save('lda1t20_4000pertype.mat','train','trainy','test','testy');
     
     LinearKernelSVM(train_scale,trainy,test_scale,testy);
     GaussianKernelSVM(train_scale,trainy,test_scale,testy);
@@ -37,6 +37,22 @@ function [train_cale,test_scale] = scale(train,test)
     test_scale = (test - repmat(minimums, size(test, 1), 1)) ./ repmat(ranges, size(test, 1), 1);
 end
 
+function [data,label] = sample(olddata,oldlabel,num_per_type)
+    dims = size(olddata,2);
+    labels = union(oldlabel,oldlabel);
+    num = num_per_type * length(labels);
+    data = zeros(num,dims);
+    label = zeros(num,1);
+    idx = 0;
+    for i = 1 : length(labels)
+        type = labels(i);
+        I = find(oldlabel == type);
+        sI = randsample(I,num_per_type);
+        data(idx+1:idx+num_per_type,:) = olddata(sI,:);
+        label(idx+1:idx+num_per_type,:) = oldlabel(sI,:);
+        idx = idx + num_per_type;
+    end
+end
 function [data,label] = mergeData(train,trainy,test,testy)
     if size(train,2) ~= size(test,2)
         return;

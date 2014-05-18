@@ -4,12 +4,29 @@
 function ErrorAnalyze(realy,predy)
     errtypes = analyze(realy,predy);
     accurate = accurancy(errtypes,realy);
+    confuseM = confuseMatrix(realy,predy);
     fprintf('total accurancy: %d',accurate);
     ploterr(errtypes);
     
     
 end
 
+function [confuseM] = confuseMatrix(realy, predicty)
+    types = union(realy,realy);
+    confuseM = zeros(length(types),length(types));
+    for i = 1 : length(types)
+        rtype = types(i);
+        rI = find(realy == rtype);
+        pred = predicty(rI);
+        tnum = length(rI);
+        for j = 1 : length(types)
+            ptype = types(j);
+            pI = find(pred == ptype);
+            pnum = length(pI);
+            confuseM(i,j) = pnum / tnum;
+        end
+    end
+end
 function [errtypes] = analyze(realy,predicty)
     if size(predicty,2) ~= 1 || size(realy,2) ~= 1 || size(realy,1) ~= size(predicty,1)
         return;
